@@ -26,35 +26,58 @@ export default function LoginPage() {
   };
 
   return (
-    <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px' }}>
-      <h1>Login</h1>
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '10px' }}>
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            style={{ width: '100%', padding: '8px' }}
-          />
-        </div>
-        <div style={{ marginBottom: '10px' }}>
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            style={{ width: '100%', padding: '8px' }}
-          />
-        </div>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        <button type="submit" disabled={loading} style={{ width: '100%', padding: '10px' }}>
-          {loading ? 'Logging in...' : 'Login'}
-        </button>
-      </form>
-      <p>Don't have an account? <Link to="/register">Register here</Link></p>
+    <div style={{ maxWidth: '380px', margin: '60px auto', padding: '0 16px' }}>
+      <div className="waloo-card">
+        <h1 style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '24px', marginTop: 0 }}>
+          Login
+        </h1>
+        <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: '12px' }}>
+            <input
+              className="waloo-input"
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          <div style={{ marginBottom: '12px' }}>
+            <input
+              className="waloo-input"
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          {error && (
+            <p
+              style={{
+                color: 'var(--color-ink)',
+                background: '#FBD9D9',
+                border: 'var(--border-thick)',
+                borderRadius: 'var(--radius-button)',
+                padding: '8px 12px',
+                fontFamily: 'DM Sans, sans-serif',
+                fontSize: '13px',
+              }}
+            >
+              {error}
+            </p>
+          )}
+          <button type="submit" className="waloo-btn" disabled={loading} style={{ width: '100%', marginTop: '4px' }}>
+            {loading ? 'Logging in...' : 'Login'}
+          </button>
+        </form>
+        <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '14px', marginBottom: 0 }}>
+          Don't have an account?{' '}
+          <Link to="/register" style={{ color: 'var(--color-ink)', fontWeight: 500 }}>
+            Register here
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }
