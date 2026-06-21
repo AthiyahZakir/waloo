@@ -53,4 +53,66 @@ router.post('/register', async (req, res) => {
   }
 });
 
+// POST /api/auth/login - authenticate an existing user and return a JWT
+router.post('/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password required' });
+    }
+
+    // Look up the user by email
+    const user = await pool.query(
+      'SELECT id, username, email, password_hash FROM users WHERE email = $1',
+      [email]
+    );
+
+    if (user.rows.length === 0) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+
+    // Compare the submitted password against the stored hash
+    const passwordMatch = await bcrypt.compare(password, user.rows[0].password_hash);
+
+    if (!passwordMatch) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+
+    // Generate a fresh JWT for this login
+    const token = jwt.sign(
+      { id: user.rows[0].id, username: user.rows[0].username },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    res.json({
+      message: 'Login successful',
+      token,
+      user: {
+        id: user.rows[0].id,
+        username: user.rows[0].username,
+        email: user.rows[0].email
+      }
+    });
+  } catch (err) {
+    console.error('Login error:', err);
+    res.status(500).json({ error: 'Server error during login' });
+  }
+});
+
+// GET /api/auth/me - protected route, returns the currently logged-in user's info
+router.get('/me', require('../middleware/auth'), async (req, res) => {
+  try {
+    const user = await pool.query(
+      'SELECT id, username, email FROM users WHERE id = $1',
+      [req.user.id]
+    );
+    res.json(user.rows[0]);
+  } catch (err) {
+    console.error('Me error:', err);
+    res.status(500).json({ error: 'Server error fetching user' });
+  }
+});
+
 module.exports = router;
