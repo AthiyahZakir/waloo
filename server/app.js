@@ -2,10 +2,15 @@
 const cors = require('cors');
 require('dotenv').config();
 
+const authRoutes = require('./routes/auth');
+
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+// Auth routes - register, login, etc.
+app.use('/api/auth', authRoutes);
 
 app.get('/api/health', async (req, res) => {
   try {
