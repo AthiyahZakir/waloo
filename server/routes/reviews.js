@@ -1,0 +1,78 @@
+const express = require('express');
+const pool = require('../db');
+const verifyToken = require('../middleware/auth');
+const router = express.Router();
+
+// POST /api/reviews - submit a review for a washroom (requires login)
+router.post('/', verifyToken, async (req, res) => {
+  try {
+    const { washroom_id, rating, comment } = req.body;
+
+    // Validate required fields
+    if (!washroom_id || rating === undefined) {
+      return res.status(400).json({ error: 'washroom_id and rating are required' });
+    }
+
+    // Validate rating is between 1 and 5
+    const ratingNum = parseInt(rating);
+    if (isNaN(ratingNum) || ratingNum < 1 || ratingNum > 5) {
+      return res.status(400).json({ error: 'Rating must be a number between 1 and 5' });
+    }
+
+    // Check the washroom actually exists before trying to review it
+    const washroomExists = await pool.query(
+      'SELECT id FROM washrooms WHERE id = $1',
+      [washroom_id]
+    );
+    if (washroomExists.rows.length === 0) {
+      return res.status(404).json({ error: 'Washroom not found' });
+    }
+
+    // Insert the review - the UNIQUE(washroom_id, user_id) constraint in the
+    // database schema enforces one review per user per washroom at the DB level
+    const result = await pool.query(
+      `INSERT INTO reviews (washroom_id, user_id, rating, comment)
+       VALUES ($1, $2, $3, $4)
+       RETURNING id, washroom_id, user_id, rating, comment, created_at`,
+      [washroom_id, req.user.id, ratingNum, comment || null]
+    );
+
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    // PostgreSQL error code 23505 = unique constraint violation
+    // This means the user already reviewed this washroom
+    if (err.code === '23505') {
+      return res.status(409).json({ error: 'You have already reviewed this washroom' });
+    }
+    console.error('POST review error:', err);
+    res.status(500).json({ error: 'Server error submitting review' });
+  }
+});
+
+// GET /api/reviews/:washroom_id - get all reviews for a washroom
+router.get('/:washroom_id', async (req, res) => {
+  try {
+    const { washroom_id } = req.params;
+
+    const result = await pool.query(
+      `SELECT
+        r.id,
+        r.rating,
+        r.comment,
+        r.created_at,
+        u.username
+      FROM reviews r
+      JOIN users u ON u.id = r.user_id
+      WHERE r.washroom_id = $1
+      ORDER BY r.created_at DESC`,
+      [washroom_id]
+    );
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error('GET reviews error:', err);
+    res.status(500).json({ error: 'Server error fetching reviews' });
+  }
+});
+
+module.exports = router;
