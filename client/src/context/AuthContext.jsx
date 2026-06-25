@@ -8,15 +8,24 @@ export function AuthProvider({ children }) {
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
+  
   // Whenever the token changes, attach it to every future axios request automatically
-  useEffect(() => {
-    if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    } else {
-      delete axios.defaults.headers.common['Authorization'];
-    }
-  }, [token]);
+useEffect(() => {
+  if (token) {
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    // Restore the user object from the server on page refresh
+    axios.get('/api/auth/me')
+      .then(res => setUser(res.data))
+      .catch(() => {
+        // Token is invalid or expired — clear everything
+        setToken(null);
+        setUser(null);
+        localStorage.removeItem('token');
+      });
+  } else {
+    delete axios.defaults.headers.common['Authorization'];
+  }
+}, [token]);
 
   const register = async (username, email, password) => {
     setLoading(true);

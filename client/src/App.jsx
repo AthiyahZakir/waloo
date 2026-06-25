@@ -24,6 +24,9 @@ export default function App() {
             }
           />
           <Route path="/" element={<LoginPage />} />
+          {/* Placeholders — built on Day 5 */}
+          <Route path="/washroom/:id" element={<ProtectedRoute><div style={{padding:'20px'}}>Washroom detail — coming Day 5</div></ProtectedRoute>} />
+          <Route path="/add" element={<ProtectedRoute><div style={{padding:'20px'}}>Add washroom — coming Day 5</div></ProtectedRoute>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
