@@ -16,6 +16,7 @@ export default function MapPage() {
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [userLocation, setUserLocation] = useState(null);
 
   // Fetch all washrooms on mount
   useEffect(() => {
@@ -33,6 +34,26 @@ export default function MapPage() {
     fetchWashrooms();
   }, []);
 
+  // My Location handler
+  const handleMyLocation = () => {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by your browser');
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const loc = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        };
+        setUserLocation(loc);
+      },
+      () => {
+        alert('Unable to get your location. Please check your browser permissions.');
+      }
+    );
+  };
+
   // Client-side search filter
   const filtered = washrooms.filter((w) =>
     w.name.toLowerCase().includes(search.toLowerCase())
@@ -41,7 +62,7 @@ export default function MapPage() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 57px)' }}>
 
-      {/* Header: search bar */}
+      {/* Header: search bar + buttons */}
       <div
         style={{
           padding: '10px 16px',
@@ -60,15 +81,25 @@ export default function MapPage() {
           onChange={(e) => setSearch(e.target.value)}
           style={{ maxWidth: '320px' }}
         />
-        {user && (
+        <div style={{ display: 'flex', gap: '8px', marginLeft: 'auto' }}>
           <button
-            className="waloo-btn"
-            onClick={() => navigate('/add')}
+            className="waloo-btn waloo-btn-secondary"
+            onClick={handleMyLocation}
             style={{ whiteSpace: 'nowrap' }}
+            title="Go to my location"
           >
-            + Add Washroom
+            📍 My Location
           </button>
-        )}
+          {user && (
+            <button
+              className="waloo-btn"
+              onClick={() => navigate('/add')}
+              style={{ whiteSpace: 'nowrap' }}
+            >
+              + Add Washroom
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Status messages */}
@@ -101,6 +132,7 @@ export default function MapPage() {
             mapId="waloo-map"
             style={{ width: '100%', height: '100%' }}
           >
+            <MapController userLocation={userLocation} />
             {filtered.map((washroom) => (
               <AdvancedMarker
                 key={washroom.id}
@@ -187,6 +219,20 @@ export default function MapPage() {
       )}
     </div>
   );
+}
+
+// Inner component that can access the map instance via useMap()
+function MapController({ userLocation }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (map && userLocation) {
+      map.panTo(userLocation);
+      map.setZoom(15);
+    }
+  }, [map, userLocation]);
+
+  return null;
 }
 
 // Custom WaLoo map pin component
