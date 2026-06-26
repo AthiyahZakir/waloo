@@ -4,6 +4,8 @@ import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Logo from '../components/Logo';
+import LoadingSpinner from '../components/LoadingSpinner';
+import ErrorMessage from '../components/ErrorMessage';
 
 const MAPS_KEY = import.meta.env.VITE_GOOGLE_MAPS_KEY;
 const DEFAULT_CENTRE = { lat: 6.9271, lng: 79.8612 }; // Colombo
@@ -103,24 +105,8 @@ export default function MapPage() {
       </div>
 
       {/* Status messages */}
-      {loading && (
-        <p style={{ padding: '12px 16px', fontFamily: 'DM Sans, sans-serif', color: 'var(--color-text-muted)' }}>
-          Loading washrooms...
-        </p>
-      )}
-      {error && (
-        <p style={{
-          margin: '12px 16px',
-          padding: '10px 12px',
-          background: '#FBD9D9',
-          border: 'var(--border-thick)',
-          borderRadius: 'var(--radius-button)',
-          fontFamily: 'DM Sans, sans-serif',
-          fontSize: '13px',
-        }}>
-          {error}
-        </p>
-      )}
+      {loading && <LoadingSpinner message="Loading washrooms..." />}
+      {error && <ErrorMessage message={error} onRetry={() => window.location.reload()} />}
 
       {/* Map */}
       <div style={{ flex: 1 }}>

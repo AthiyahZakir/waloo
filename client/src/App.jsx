@@ -8,6 +8,7 @@ import LoginPage from './pages/LoginPage';
 import MapPage from './pages/MapPage';
 import WashroomDetail from './pages/WashroomDetail';
 import AddWashroom from './pages/AddWashroom';
+import NotFound from './pages/NotFound';
 
 export default function App() {
   return (
@@ -29,6 +30,7 @@ export default function App() {
           {/* Placeholders — built on Day 5 */}
           <Route path="/washroom/:id" element={<ProtectedRoute><WashroomDetail /></ProtectedRoute>} />
           <Route path="/add" element={<ProtectedRoute><AddWashroom /></ProtectedRoute>} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

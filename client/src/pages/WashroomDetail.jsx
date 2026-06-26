@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import Logo from '../components/Logo';
+import LoadingSpinner from '../components/LoadingSpinner';
+import ErrorMessage from '../components/ErrorMessage';
 
 export default function WashroomDetail() {
   const { id } = useParams();
@@ -61,28 +63,16 @@ export default function WashroomDetail() {
     }
   };
 
-  if (loading) return (
-    <p style={{ padding: '20px', fontFamily: 'DM Sans, sans-serif', color: 'var(--color-text-muted)' }}>
-      Loading washroom...
-    </p>
-  );
+  if (loading) return <LoadingSpinner message="Loading washroom..." />;
+
 
   if (error) return (
-    <div style={{ padding: '20px' }}>
-      <p style={{
-        padding: '10px 12px',
-        background: '#FBD9D9',
-        border: 'var(--border-thick)',
-        borderRadius: 'var(--radius-button)',
-        fontFamily: 'DM Sans, sans-serif',
-        fontSize: '13px',
-      }}>
-        {error}
-      </p>
-      <button className="waloo-btn waloo-btn-secondary" onClick={() => navigate('/map')}>
-        ← Back to map
-      </button>
-    </div>
+  <div style={{ padding: '20px' }}>
+    <ErrorMessage message={error} onRetry={fetchWashroom} />
+    <button className="waloo-btn waloo-btn-secondary" onClick={() => navigate('/map')} style={{ marginTop: '12px' }}>
+      ← Back to map
+    </button>
+  </div>
   );
 
   return (
