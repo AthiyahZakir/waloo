@@ -8,7 +8,11 @@ const reviewRoutes = require('./routes/reviews');
 
 const app = express();
 
-app.use(cors());
+// Allow requests from the frontend — update FRONTEND_URL in production env vars
+app.use(cors({
+  origin: process.env.FRONTEND_URL || '*',
+  credentials: true,
+}));
 app.use(express.json());
 
 // Auth routes - register, login, etc.

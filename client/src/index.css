@@ -75,3 +75,7 @@ body {
   outline: none;
   border-color: var(--color-sky);
 }
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
