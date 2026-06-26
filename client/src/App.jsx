@@ -6,6 +6,8 @@ import ProtectedRoute from './components/ProtectedRoute';
 import RegisterPage from './pages/RegisterPage';
 import LoginPage from './pages/LoginPage';
 import MapPage from './pages/MapPage';
+import WashroomDetail from './pages/WashroomDetail';
+import AddWashroom from './pages/AddWashroom';
 
 export default function App() {
   return (
@@ -25,8 +27,8 @@ export default function App() {
           />
           <Route path="/" element={<LoginPage />} />
           {/* Placeholders — built on Day 5 */}
-          <Route path="/washroom/:id" element={<ProtectedRoute><div style={{padding:'20px'}}>Washroom detail — coming Day 5</div></ProtectedRoute>} />
-          <Route path="/add" element={<ProtectedRoute><div style={{padding:'20px'}}>Add washroom — coming Day 5</div></ProtectedRoute>} />
+          <Route path="/washroom/:id" element={<ProtectedRoute><WashroomDetail /></ProtectedRoute>} />
+          <Route path="/add" element={<ProtectedRoute><AddWashroom /></ProtectedRoute>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
