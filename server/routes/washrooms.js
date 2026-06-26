@@ -1,3 +1,12 @@
+/**
+ * routes/washrooms.js
+ * Washroom CRUD endpoints.
+ * GET / and GET /:id are public — no login required to browse washrooms.
+ * POST / is protected — only logged-in users can add new washrooms.
+ * avg_rating is calculated via SQL AVG() with LEFT JOIN so washrooms
+ * with zero reviews still appear in the list (they just show null avg_rating).
+ */
+
 const express = require('express');
 const pool = require('../db');
 const verifyToken = require('../middleware/auth');

@@ -1,3 +1,10 @@
+/**
+ * routes/auth.js
+ * Authentication endpoints: register, login, and get current user.
+ * Passwords are hashed with bcrypt before storage — plain text is never saved.
+ * Successful auth returns a JWT signed with JWT_SECRET, valid for 7 days.
+ */
+
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');

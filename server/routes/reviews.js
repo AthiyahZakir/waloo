@@ -1,3 +1,12 @@
+/**
+ * routes/reviews.js
+ * Review endpoints for washrooms.
+ * POST / is protected — only logged-in users can submit reviews.
+ * The database schema enforces UNIQUE(washroom_id, user_id) so one user
+ * can only review each washroom once — caught here via PostgreSQL error code 23505.
+ * GET /:washroom_id is public.
+ */
+
 const express = require('express');
 const pool = require('../db');
 const verifyToken = require('../middleware/auth');

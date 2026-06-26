@@ -1,3 +1,11 @@
+/**
+ * middleware/auth.js
+ * JWT verification middleware.
+ * Attach this to any route that requires the user to be logged in.
+ * On success, adds req.user = { id, username } decoded from the token.
+ * On failure, responds with 401 before the route handler runs.
+ */
+
 const jwt = require('jsonwebtoken');
 
 // Verifies the JWT sent in the Authorization header.
