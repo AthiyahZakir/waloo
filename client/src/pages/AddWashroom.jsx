@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { APIProvider, Map, AdvancedMarker } from '@vis.gl/react-google-maps';
-import axios from 'axios';
+import api from '../utils/api';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import Logo from '../components/Logo';
@@ -46,7 +46,7 @@ export default function AddWashroom() {
 
     setLoading(true);
     try {
-      await axios.post('/api/washrooms', {
+      await api.post('/api/washrooms', {
         name: name.trim(),
         address: address.trim(),
         latitude: pinLocation.lat,

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../utils/api';
+
+// @refresh reset
 
 export const AuthContext = React.createContext();
 
@@ -8,30 +10,25 @@ export function AuthProvider({ children }) {
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  
-  // Whenever the token changes, attach it to every future axios request automatically
-useEffect(() => {
-  if (token) {
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    // Restore the user object from the server on page refresh
-    axios.get('/api/auth/me')
-      .then(res => setUser(res.data))
-      .catch(() => {
-        // Token is invalid or expired — clear everything
-        setToken(null);
-        setUser(null);
-        localStorage.removeItem('token');
-      });
-  } else {
-    delete axios.defaults.headers.common['Authorization'];
-  }
-}, [token]);
+
+  // On token change, restore user object from server (handles page refresh)
+  useEffect(() => {
+    if (token) {
+      api.get('/api/auth/me')
+        .then(res => setUser(res.data))
+        .catch(() => {
+          setToken(null);
+          setUser(null);
+          localStorage.removeItem('token');
+        });
+    }
+  }, [token]);
 
   const register = async (username, email, password) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.post('/api/auth/register', { username, email, password });
+      const response = await api.post('/api/auth/register', { username, email, password });
       setToken(response.data.token);
       setUser(response.data.user);
       localStorage.setItem('token', response.data.token);
@@ -49,7 +46,7 @@ useEffect(() => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.post('/api/auth/login', { email, password });
+      const response = await api.post('/api/auth/login', { email, password });
       setToken(response.data.token);
       setUser(response.data.user);
       localStorage.setItem('token', response.data.token);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../utils/api';
 import { AuthContext } from '../context/AuthContext';
 import Logo from '../components/Logo';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -23,7 +23,7 @@ export default function WashroomDetail() {
   const fetchWashroom = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`/api/washrooms/${id}`);
+      const res = await api.get(`/api/washrooms/${id}`);
       setWashroom(res.data);
     } catch (err) {
       setError('Could not load washroom details. Please try again.');
@@ -45,7 +45,7 @@ export default function WashroomDetail() {
     setReviewLoading(true);
     setReviewError(null);
     try {
-      await axios.post('/api/reviews', {
+      await api.post('/api/reviews', {
         washroom_id: parseInt(id),
         rating,
         comment,

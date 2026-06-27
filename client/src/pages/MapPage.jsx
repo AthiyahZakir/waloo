@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { APIProvider, Map, AdvancedMarker, useMap } from '@vis.gl/react-google-maps';
-import axios from 'axios';
+import api from '../utils/api';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Logo from '../components/Logo';
@@ -25,7 +25,7 @@ export default function MapPage() {
     const fetchWashrooms = async () => {
       try {
         setLoading(true);
-        const res = await axios.get('/api/washrooms');
+        const res = await api.get('/api/washrooms');
         setWashrooms(res.data);
       } catch (err) {
         setError('Failed to load washrooms. Please try again.');
