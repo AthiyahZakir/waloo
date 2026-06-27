@@ -10,7 +10,15 @@ const app = express();
 
 // Allow requests from the frontend — update FRONTEND_URL in production env vars
 app.use(cors({
-  origin: process.env.FRONTEND_URL || '*',
+  origin: function(origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, Postman)
+    if (!origin) return callback(null, true);
+    // Allow any vercel.app subdomain and localhost
+    if (origin.includes('vercel.app') || origin.includes('localhost')) {
+      return callback(null, true);
+    }
+    callback(new Error('Not allowed by CORS'));
+  },
   credentials: true,
 }));
 app.use(express.json());
