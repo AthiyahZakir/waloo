@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import Logo from '../components/Logo';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
+import { useLocation } from 'react-router-dom';
 
 const MAPS_KEY = import.meta.env.VITE_GOOGLE_MAPS_KEY;
 const DEFAULT_CENTRE = { lat: 6.9271, lng: 79.8612 }; // Colombo
@@ -19,6 +20,8 @@ export default function MapPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [userLocation, setUserLocation] = useState(null);
+  const location = useLocation();
+  const [communityMessage, setCommunityMessage] = useState(location.state?.deletedMessage || null);
 
   // Fetch all washrooms on mount
   useEffect(() => {
@@ -63,6 +66,37 @@ export default function MapPage() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 57px)' }}>
+
+      {communityMessage && (
+  <div style={{
+    padding: '12px 16px',
+    background: '#D9FBD9',
+    border: 'var(--border-thick)',
+    borderBottom: 'var(--border-thick)',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    fontFamily: 'DM Sans, sans-serif',
+    fontSize: '13px',
+  }}>
+    <span>🌿 {communityMessage}</span>
+    <button
+      onClick={() => setCommunityMessage(null)}
+      style={{
+        background: 'none',
+        border: 'none',
+        cursor: 'pointer',
+        fontFamily: 'Space Grotesk, sans-serif',
+        fontWeight: 600,
+        fontSize: '16px',
+        color: 'var(--color-ink)',
+        padding: '0 4px',
+      }}
+    >
+      ×
+    </button>
+  </div>
+)}
 
       {/* Header: search bar + buttons */}
       <div

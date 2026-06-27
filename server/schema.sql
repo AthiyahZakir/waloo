@@ -19,7 +19,7 @@ CREATE TABLE washrooms (
 
 CREATE TABLE reviews (
   id SERIAL PRIMARY KEY,
-  washroom_id INTEGER NOT NULL REFERENCES washrooms(id),
+  washroom_id INTEGER NOT NULL REFERENCES washrooms(id) ON DELETE CASCADE,
   user_id INTEGER NOT NULL REFERENCES users(id),
   rating INTEGER CHECK (rating >= 1 AND rating <= 5),
   comment TEXT,

@@ -46,7 +46,27 @@ router.post('/', verifyToken, async (req, res) => {
       [washroom_id, req.user.id, ratingNum, comment || null]
     );
 
-    res.status(201).json(result.rows[0]);
+// Auto-deletion check: if this washroom now has 2+ one-star reviews
+// from different users, it gets automatically removed from the platform
+const oneStarCheck = await pool.query(
+  `SELECT COUNT(DISTINCT user_id) as one_star_count 
+   FROM reviews 
+   WHERE washroom_id = $1 AND rating = 1`,
+  [washroom_id]
+);
+
+const oneStarCount = parseInt(oneStarCheck.rows[0].one_star_count);
+
+if (oneStarCount >= 2) {
+  // Delete the washroom — reviews cascade automatically via foreign key
+  await pool.query('DELETE FROM washrooms WHERE id = $1', [washroom_id]);
+  return res.status(201).json({
+    ...result.rows[0],
+    warning: 'This washroom has been removed due to multiple poor reviews.'
+  });
+}
+
+res.status(201).json(result.rows[0]);
   } catch (err) {
     // PostgreSQL error code 23505 = unique constraint violation
     // This means the user already reviewed this washroom

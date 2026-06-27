@@ -45,15 +45,21 @@ export default function WashroomDetail() {
     setReviewLoading(true);
     setReviewError(null);
     try {
-      await api.post('/api/reviews', {
+      const res = await api.post('/api/reviews', {
         washroom_id: parseInt(id),
         rating,
         comment,
       });
+
+      // Check if the washroom was auto-deleted due to poor reviews
+      if (res.data.warning) {
+        navigate('/map', { state: { deletedMessage: 'Your review was submitted — this washroom was removed by the community. Thanks for keeping WaLoo clean.' } });
+        return;
+      }
+
       setReviewSuccess(true);
       setRating(0);
       setComment('');
-      // Refresh the washroom data so the new review appears immediately
       fetchWashroom();
     } catch (err) {
       const msg = err.response?.data?.error || 'Failed to submit review';
@@ -65,14 +71,13 @@ export default function WashroomDetail() {
 
   if (loading) return <LoadingSpinner message="Loading washroom..." />;
 
-
   if (error) return (
-  <div style={{ padding: '20px' }}>
-    <ErrorMessage message={error} onRetry={fetchWashroom} />
-    <button className="waloo-btn waloo-btn-secondary" onClick={() => navigate('/map')} style={{ marginTop: '12px' }}>
-      ← Back to map
-    </button>
-  </div>
+    <div style={{ padding: '20px' }}>
+      <ErrorMessage message={error} onRetry={fetchWashroom} />
+      <button className="waloo-btn waloo-btn-secondary" onClick={() => navigate('/map')} style={{ marginTop: '12px' }}>
+        ← Back to map
+      </button>
+    </div>
   );
 
   return (
