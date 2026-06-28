@@ -2,11 +2,10 @@ import React, { useState, useEffect, useContext } from 'react';
 import { APIProvider, Map, AdvancedMarker, useMap } from '@vis.gl/react-google-maps';
 import api from '../utils/api';
 import { AuthContext } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Logo from '../components/Logo';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
-import { useLocation } from 'react-router-dom';
 
 const MAPS_KEY = import.meta.env.VITE_GOOGLE_MAPS_KEY;
 const DEFAULT_CENTRE = { lat: 6.9271, lng: 79.8612 }; // Colombo
@@ -59,84 +58,120 @@ export default function MapPage() {
     );
   };
 
+  // Calculate straight-line distance between two coordinates in km
+  const getDistanceKm = (lat1, lng1, lat2, lng2) => {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
+
+  // Convert km to walking minutes (~5km/h)
+  const toWalkingMins = (km) => Math.round(km / 5 * 60);
+
   // Client-side search filter
   const filtered = washrooms.filter((w) =>
     w.name.toLowerCase().includes(search.toLowerCase())
   );
 
+  // If user location is known, sort by distance and show 5 closest first, rest after
+  const sortedFiltered = userLocation
+    ? [
+        ...filtered
+          .map(w => ({
+            ...w,
+            distanceKm: getDistanceKm(
+              userLocation.lat, userLocation.lng,
+              parseFloat(w.latitude), parseFloat(w.longitude)
+            )
+          }))
+          .sort((a, b) => a.distanceKm - b.distanceKm)
+      ]
+    : filtered;
+
+  // Cards: 5 closest first, then the rest
+  const closestFive = userLocation ? sortedFiltered.slice(0, 5) : [];
+  const theRest = userLocation ? sortedFiltered.slice(5) : sortedFiltered;
+  const cardList = userLocation ? [...closestFive, ...theRest] : sortedFiltered;
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 57px)' }}>
 
+      {/* Community deletion message */}
       {communityMessage && (
-  <div style={{
-    padding: '12px 16px',
-    background: '#D9FBD9',
-    border: 'var(--border-thick)',
-    borderBottom: 'var(--border-thick)',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    fontFamily: 'DM Sans, sans-serif',
-    fontSize: '13px',
-  }}>
-    <span>🌿 {communityMessage}</span>
-    <button
-      onClick={() => setCommunityMessage(null)}
-      style={{
-        background: 'none',
-        border: 'none',
-        cursor: 'pointer',
-        fontFamily: 'Space Grotesk, sans-serif',
-        fontWeight: 600,
-        fontSize: '16px',
-        color: 'var(--color-ink)',
-        padding: '0 4px',
-      }}
-    >
-      ×
-    </button>
-  </div>
-)}
-
-      {/* Header: search bar + buttons */}
-      <div
-        style={{
-          padding: '10px 16px',
+        <div style={{
+          padding: '12px 16px',
+          background: '#D9FBD9',
+          border: 'var(--border-thick)',
           borderBottom: 'var(--border-thick)',
           display: 'flex',
+          justifyContent: 'space-between',
           alignItems: 'center',
-          gap: '10px',
-          background: 'var(--color-bg)',
-        }}
-      >
-        <input
-          className="waloo-input"
-          type="text"
-          placeholder="Search washrooms..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          style={{ maxWidth: '320px' }}
-        />
-        <div style={{ display: 'flex', gap: '8px', marginLeft: 'auto' }}>
+          fontFamily: 'DM Sans, sans-serif',
+          fontSize: '13px',
+        }}>
+          <span>🌿 {communityMessage}</span>
           <button
-            className="waloo-btn waloo-btn-secondary"
-            onClick={handleMyLocation}
-            style={{ whiteSpace: 'nowrap' }}
-            title="Go to my location"
+            onClick={() => setCommunityMessage(null)}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              fontFamily: 'Space Grotesk, sans-serif',
+              fontWeight: 600,
+              fontSize: '16px',
+              color: 'var(--color-ink)',
+              padding: '0 4px',
+            }}
           >
-            📍 My Location
+            ×
           </button>
-          {user && (
-            <button
-              className="waloo-btn"
-              onClick={() => navigate('/add')}
-              style={{ whiteSpace: 'nowrap' }}
-            >
-              + Add Washroom
-            </button>
-          )}
         </div>
-      </div>
+      )}
+
+     {/* Header: location + search centered, add washroom pinned right */}
+<div style={{
+  padding: '8px 12px',
+  borderBottom: 'var(--border-thick)',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '8px',
+  background: 'var(--color-bg)',
+  flexWrap: 'wrap',
+}}>
+  <button
+    className="waloo-btn waloo-btn-secondary"
+    onClick={handleMyLocation}
+    style={{ whiteSpace: 'nowrap', fontSize: '13px', padding: '8px 10px' }}
+    title="Go to my location"
+  >
+    📍 My Location
+  </button>
+
+  <input
+    className="waloo-input"
+    type="text"
+    placeholder="Search washrooms..."
+    value={search}
+    onChange={(e) => setSearch(e.target.value)}
+    style={{ flex: 1, minWidth: '120px' }}
+  />
+
+  {user && (
+    <button
+      className="waloo-btn"
+      onClick={() => navigate('/add')}
+      style={{ whiteSpace: 'nowrap', fontSize: '13px', padding: '8px 10px' }}
+    >
+      + Add
+    </button>
+  )}
+</div>
 
       {/* Status messages */}
       {loading && <LoadingSpinner message="Loading washrooms..." />}
@@ -153,7 +188,19 @@ export default function MapPage() {
             style={{ width: '100%', height: '100%' }}
           >
             <MapController userLocation={userLocation} />
-            {filtered.map((washroom) => (
+            {userLocation && (
+              <AdvancedMarker position={userLocation}>
+                <div style={{
+                  width: '22px',
+                  height: '22px',
+                  background: '#FF4444',
+                  border: 'var(--border-thick)',
+                  borderRadius: '50%',
+                  boxShadow: 'var(--shadow-sticker)',
+                }} />
+              </AdvancedMarker>
+            )}
+            {sortedFiltered.map((washroom) => (
               <AdvancedMarker
                 key={washroom.id}
                 position={{ lat: parseFloat(washroom.latitude), lng: parseFloat(washroom.longitude) }}
@@ -170,11 +217,11 @@ export default function MapPage() {
         </APIProvider>
       </div>
 
-      {/* Washroom cards grid below the map */}
-      {filtered.length > 0 && (
+      {/* Washroom cards */}
+      {cardList.length > 0 && (
         <div
           style={{
-            maxHeight: '220px',
+            maxHeight: '200px',
             overflowY: 'auto',
             display: 'flex',
             gap: '12px',
@@ -183,13 +230,22 @@ export default function MapPage() {
             background: 'var(--color-surface-grey)',
           }}
         >
-          {filtered.map((w) => (
+          {cardList.map((w, index) => (
             <div
-              key={w.id}
-              className="waloo-card"
-              style={{ minWidth: '200px', maxWidth: '220px', flexShrink: 0, cursor: 'pointer' }}
-              onClick={() => navigate(`/washroom/${w.id}`)}
-            >
+  key={w.id}
+  className="waloo-card"
+  style={{
+    minWidth: '180px',
+    maxWidth: '200px',
+    flexShrink: 0,
+    cursor: 'pointer',
+    border: userLocation && index < 5 ? '2.5px solid var(--color-ink)' : 'var(--border-thick)',
+    boxShadow: userLocation && index < 5 ? 'var(--shadow-sticker)' : 'none',
+    display: 'flex',
+    flexDirection: 'column',
+  }}
+  onClick={() => navigate(`/washroom/${w.id}`)}
+>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
                 <span
                   style={{
@@ -206,26 +262,67 @@ export default function MapPage() {
                 >
                   <Logo size={14} />
                 </span>
-                <span style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 600, fontSize: '13px' }}>
-                  {w.name}
-                </span>
+                <span style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 600, fontSize: '13px', lineHeight: '1.3' }}>
+  {w.name}
+</span>
               </div>
-              <p style={{ margin: '0 0 4px', fontFamily: 'DM Sans, sans-serif', fontSize: '12px', color: 'var(--color-text-muted)' }}>
-                {w.address}
-              </p>
+
+              {/* Walking distance — only for closest 5 */}
+              {userLocation && index < 5 && w.distanceKm !== undefined && (
+                <p style={{ margin: '0 0 6px', fontFamily: 'Space Grotesk, sans-serif', fontSize: '12px', fontWeight: 600, color: 'var(--color-ink)' }}>
+                  🚶 {toWalkingMins(w.distanceKm)} min walk
+                </p>
+              )}
+
               <p style={{ margin: '0 0 8px', fontFamily: 'DM Sans, sans-serif', fontSize: '12px', color: 'var(--color-text-muted)' }}>
                 {w.avg_rating ? `⭐ ${w.avg_rating}` : 'No reviews yet'} · {w.review_count} review{w.review_count !== 1 ? 's' : ''}
               </p>
-              <button className="waloo-btn" style={{ width: '100%', fontSize: '12px', padding: '6px 10px' }}>
-                View details
-              </button>
+
+              {w.tags && w.tags.length > 0 && (
+                <div style={{ display: 'flex', gap: '4px', marginBottom: '8px', flexWrap: 'wrap' }}>
+                  {w.tags.map((tag) => {
+                    const tagConfig = {
+                      wheelchair: { emoji: '♿', bg: '#E8D5F5' },
+                      baby_changing: { emoji: '👶', bg: '#FFD6E7' },
+                      shower: { emoji: '🚿', bg: '#D6EAF8' },
+                      paid: { emoji: '💰', bg: '#FFF3CD' },
+                      key_required: { emoji: '🔒', bg: '#FFE5CC' },
+                      open_24h: { emoji: '🌙', bg: '#D5F5E3' },
+                    };
+                    const config = tagConfig[tag] || { emoji: '•', bg: '#F0F0EE' };
+                    return (
+                      <span
+                        key={tag}
+                        title={tag.replace('_', ' ')}
+                        style={{
+                          fontSize: '12px',
+                          background: config.bg,
+                          border: 'var(--border-thick)',
+                          borderRadius: '50%',
+                          width: '22px',
+                          height: '22px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        {config.emoji}
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
+
+              <button className="waloo-btn" style={{ width: '100%', fontSize: '12px', padding: '6px 10px', marginTop: 'auto' }}>
+  View details
+</button>
             </div>
           ))}
         </div>
       )}
 
       {/* Empty state */}
-      {!loading && filtered.length === 0 && (
+      {!loading && cardList.length === 0 && (
         <div style={{ padding: '20px 16px', textAlign: 'center' }}>
           <p style={{ fontFamily: 'DM Sans, sans-serif', color: 'var(--color-text-muted)' }}>
             No washrooms found — be the first to add one!
@@ -313,22 +410,22 @@ function WalooPin({ washroom, isSelected, onViewDetails }) {
       {washroom.avg_rating && (
         <div
           style={{
-            position: 'absolute',
-            top: -6,
-            right: -6,
-            width: '18px',
-            height: '18px',
-            background: 'var(--color-ink)',
-            color: '#FFFFFF',
-            borderRadius: '50%',
-            border: '1.5px solid #FFFFFF',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontFamily: 'Space Grotesk, sans-serif',
-            fontWeight: 700,
-            fontSize: '8px',
-          }}
+              position: 'absolute',
+              top: -5,
+              right: -5,
+              width: '16px',
+              height: '16px',
+              background: 'var(--color-ink)',
+              color: '#FFFFFF',
+              borderRadius: '50%',
+              border: '1.5px solid #FFFFFF',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontFamily: 'Space Grotesk, sans-serif',
+              fontWeight: 700,
+              fontSize: '7px',
+              }}
         >
           {washroom.avg_rating}
         </div>
