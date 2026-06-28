@@ -18,6 +18,7 @@ export default function AddWashroom() {
   const [pinLocation, setPinLocation] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [tags, setTags] = useState([]);
 
   // When user clicks the map, drop a pin at that location
   const handleMapClick = (e) => {
@@ -27,13 +28,19 @@ export default function AddWashroom() {
     });
   };
 
+  const toggleTag = (tag) => {
+  setTags(prev =>
+    prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+  );
+};
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
 
     if (!pinLocation) {
       setError('Please click on the map to set the washroom location.');
-      return;
+      return; 
     }
     if (!name.trim()) {
       setError('Please enter a washroom name.');
@@ -51,7 +58,7 @@ export default function AddWashroom() {
         address: address.trim(),
         latitude: pinLocation.lat,
         longitude: pinLocation.lng,
-        description: description.trim() || undefined,
+        description: description.trim() || undefined, tags,
       });
       navigate('/map');
     } catch (err) {
@@ -61,6 +68,15 @@ export default function AddWashroom() {
       setLoading(false);
     }
   };
+
+  const AVAILABLE_TAGS = [
+  { key: 'wheelchair', label: '♿ Wheelchair Accessible' },
+  { key: 'baby_changing', label: '👶 Baby Changing' },
+  { key: 'shower', label: '🚿 Shower Available' },
+  { key: 'paid', label: '💰 Paid Entry' },
+  { key: 'key_required', label: '🔒 Requires Key' },
+  { key: 'open_24h', label: '🌙 Open 24 Hours' },
+];
 
   return (
     <div style={{ maxWidth: '640px', margin: '0 auto', padding: '20px 16px' }}>
@@ -168,6 +184,34 @@ export default function AddWashroom() {
               style={{ resize: 'vertical' }}
             />
           </div>
+
+          <div style={{ marginBottom: '16px' }}>
+  <label style={{ display: 'block', fontFamily: 'Space Grotesk, sans-serif', fontSize: '13px', fontWeight: 500, marginBottom: '8px' }}>
+    Facilities (optional)
+  </label>
+  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+    {AVAILABLE_TAGS.map((tag) => (
+      <button
+        key={tag.key}
+        type="button"
+        onClick={() => toggleTag(tag.key)}
+        style={{
+          background: tags.includes(tag.key) ? 'var(--color-yellow)' : 'var(--color-bg)',
+          border: 'var(--border-thick)',
+          borderRadius: '20px',
+          padding: '6px 12px',
+          fontFamily: 'DM Sans, sans-serif',
+          fontSize: '13px',
+          cursor: 'pointer',
+          boxShadow: tags.includes(tag.key) ? 'var(--shadow-sticker)' : 'none',
+          transition: 'all 0.1s ease',
+        }}
+      >
+        {tag.label}
+      </button>
+    ))}
+  </div>
+</div>
 
           {error && (
             <p style={{
