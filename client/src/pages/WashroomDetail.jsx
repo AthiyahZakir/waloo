@@ -82,14 +82,36 @@ export default function WashroomDetail() {
 
   return (
     <div style={{ maxWidth: '640px', margin: '0 auto', padding: '20px 16px' }}>
-      {/* Back button */}
-      <button
-        className="waloo-btn waloo-btn-secondary"
-        onClick={() => navigate('/map')}
-        style={{ marginBottom: '16px' }}
-      >
-        ← Back to map
-      </button>
+
+      {/* Top bar: back button + take me there */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+        <button
+          className="waloo-btn waloo-btn-secondary"
+          onClick={() => navigate('/map')}
+        >
+          ← Back to map
+        </button>
+        <button
+          onClick={() => window.open(
+            `https://www.google.com/maps/dir/?api=1&destination=${washroom.latitude},${washroom.longitude}`,
+            '_blank'
+          )}
+          style={{
+            background: 'var(--color-sky)',
+            border: 'var(--border-thick)',
+            borderRadius: 'var(--radius-button)',
+            boxShadow: 'var(--shadow-sticker)',
+            color: 'var(--color-ink)',
+            fontFamily: 'Space Grotesk, sans-serif',
+            fontWeight: 500,
+            fontSize: '14px',
+            padding: '10px 16px',
+            cursor: 'pointer',
+          }}
+        >
+          🧭 Take me there
+        </button>
+      </div>
 
       {/* Washroom info card */}
       <div className="waloo-card" style={{ marginBottom: '16px' }}>
@@ -122,6 +144,38 @@ export default function WashroomDetail() {
             {washroom.description}
           </p>
         )}
+
+{washroom.tags && washroom.tags.length > 0 && (
+  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '10px' }}>
+    {washroom.tags.map((tag) => {
+      const tagConfig = {
+        wheelchair: { label: '♿ Wheelchair Accessible', bg: '#E8D5F5' },
+        baby_changing: { label: '👶 Baby Changing', bg: '#FFD6E7' },
+        shower: { label: '🚿 Shower Available', bg: '#D6EAF8' },
+        paid: { label: '💰 Paid Entry', bg: '#FFF3CD' },
+        key_required: { label: '🔒 Requires Key', bg: '#FFE5CC' },
+        open_24h: { label: '🌙 Open 24 Hours', bg: '#D5F5E3' },
+      };
+      const config = tagConfig[tag] || { label: tag, bg: '#F0F0EE' };
+      return (
+        <span
+          key={tag}
+          style={{
+            background: config.bg,
+            border: 'var(--border-thick)',
+            borderRadius: '20px',
+            padding: '4px 10px',
+            fontFamily: 'DM Sans, sans-serif',
+            fontSize: '12px',
+            fontWeight: 500,
+          }}
+        >
+          {config.label}
+        </span>
+      );
+    })}
+  </div>
+)}
       </div>
 
       {/* Review form — only shown if logged in */}
