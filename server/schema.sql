@@ -15,6 +15,7 @@ CREATE TABLE washrooms (
   description TEXT,
   added_by INTEGER NOT NULL REFERENCES users(id),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  tags TEXT[] DEFAULT '{}'
 );
 
 CREATE TABLE reviews (

@@ -33,6 +33,7 @@ router.get('/', async (req, res) => {
           w.description,
           w.added_by,
           w.created_at,
+          w.tags,
           ROUND(AVG(r.rating)::numeric, 1) AS avg_rating,
           COUNT(r.id) AS review_count
         FROM washrooms w
@@ -53,6 +54,7 @@ router.get('/', async (req, res) => {
           w.description,
           w.added_by,
           w.created_at,
+          w.tags,
           ROUND(AVG(r.rating)::numeric, 1) AS avg_rating,
           COUNT(r.id) AS review_count
         FROM washrooms w
@@ -87,6 +89,7 @@ router.get('/:id', async (req, res) => {
         w.description,
         w.added_by,
         w.created_at,
+        w.tags,
         ROUND(AVG(r.rating)::numeric, 1) AS avg_rating,
         COUNT(r.id) AS review_count
       FROM washrooms w
@@ -128,8 +131,7 @@ router.get('/:id', async (req, res) => {
 // POST /api/washrooms - create a new washroom (requires login)
 router.post('/', verifyToken, async (req, res) => {
   try {
-    const { name, address, latitude, longitude, description } = req.body;
-
+const { name, address, latitude, longitude, description, tags } = req.body;
     // Validate required fields
     if (!name || !address || latitude === undefined || longitude === undefined) {
       return res.status(400).json({ error: 'Name, address, latitude, and longitude are required' });
@@ -158,11 +160,11 @@ router.post('/', verifyToken, async (req, res) => {
 
     // req.user.id comes from the JWT via verifyToken middleware
     const result = await pool.query(
-      `INSERT INTO washrooms (name, address, latitude, longitude, description, added_by)
-       VALUES ($1, $2, $3, $4, $5, $6)
-       RETURNING id, name, address, latitude, longitude, description, added_by, created_at`,
-      [name, address, lat, lng, description || null, req.user.id]
-    );
+  `INSERT INTO washrooms (name, address, latitude, longitude, description, added_by, tags)
+   VALUES ($1, $2, $3, $4, $5, $6, $7)
+   RETURNING id, name, address, latitude, longitude, description, added_by, created_at, tags`,
+  [name, address, lat, lng, description || null, req.user.id, tags || []]
+);
 
     res.status(201).json(result.rows[0]);
   } catch (err) {
