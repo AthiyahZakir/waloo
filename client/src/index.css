@@ -27,6 +27,7 @@ body {
   --shadow-sticker-pressed: 1px 1px 0 var(--color-ink);
 }
 
+/* ── Utility Classes ── */
 .waloo-card {
   background: var(--color-bg);
   border: var(--border-thick);
@@ -76,6 +77,100 @@ body {
   border-color: var(--color-sky);
 }
 
+/* ── Spinner ── */
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+/* ── Login Page Layout ── */
+.login-page {
+  display: flex;
+  flex-direction: row;
+  min-height: calc(100vh - 57px);
+  background: var(--color-surface-grey);
+}
+
+.login-form-side {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+}
+
+.login-image-side {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface-grey);
+  padding: 40px;
+}
+
+.login-image-side img {
+  max-width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+  filter: drop-shadow(4px 4px 0px var(--color-ink));
+}
+
+/* ── About Page Layout ── */
+.about-two-col {
+  grid-template-columns: 1fr 1fr;
+}
+
+.about-three-col {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+/* ── Mobile Responsive ── */
+@media (max-width: 768px) {
+
+  /* Navbar */
+  .nav-quote { display: none !important; }
+  .nav-username { display: none !important; }
+  .nav-about-link { font-size: 12px !important; }
+
+  /* Login page — image on top, form below */
+.login-page {
+    flex-direction: column;
+    justify-content: center;
+    min-height: calc(100vh - 57px);
+  }
+  .login-form-side {
+    order: 2;
+    padding: 4px 16px 24px;
+    flex: 0;
+  }
+  .login-image-side {
+    order: 1;
+    padding: 24px 16px 4px;
+    flex: 0;
+  }
+  .login-image-side img {
+    max-height: 180px;
+    filter: drop-shadow(6px 6px 0px var(--color-ink));
+  }
+
+  /* About page */
+  .about-two-col {
+    grid-template-columns: 1fr !important;
+    padding: 40px 20px !important;
+    gap: 30px !important;
+  }
+  .about-three-col {
+    grid-template-columns: 1fr !important;
+  }
+  section {
+    padding: 40px 20px !important;
+  }
+
+  /* General */
+  .waloo-card {
+    padding: 12px;
+  }
+  .waloo-btn {
+    font-size: 12px;
+    padding: 7px 10px;
+  }
 }
