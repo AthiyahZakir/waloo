@@ -9,6 +9,7 @@ import MapPage from './pages/MapPage';
 import WashroomDetail from './pages/WashroomDetail';
 import AddWashroom from './pages/AddWashroom';
 import NotFound from './pages/NotFound';
+import AboutPage from './pages/AboutPage';
 
 export default function App() {
   return (
@@ -18,6 +19,7 @@ export default function App() {
         <Routes>
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/about" element={<AboutPage />} />
           <Route
             path="/map"
             element={
